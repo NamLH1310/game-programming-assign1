@@ -23,13 +23,13 @@ pygame.mouse.set_visible(False)
 bg=Aim('./image/empty_field.png').draw(SCREEN_WIDTH,SCREEN_HEIGHT)
 
 # Cursor param
-target=Aim('./image/aim.png').draw(90,90)
-gun=Aim('./image/gun.png').draw(250,180)
+target=Aim('./image/aim.png').draw(SCREEN_WIDTH/8,SCREEN_WIDTH/8)
+gun=Aim('./image/gun.png').draw(SCREEN_WIDTH/4,SCREEN_HEIGHT/4)
 target_rect=target.get_rect()
 gun_rect=gun.get_rect()
 
 # Import char sprite
-zombie=Zombie('./image/zombie.png',90,60)
+zombie=Zombie('./image/zombie.png',SCREEN_WIDTH/8,SCREEN_WIDTH/7)
 sprite_list=zombie.draw_demo()
 
 # Main func
@@ -44,7 +44,7 @@ def main() -> None:
         
         # mouse movement
         (x,y)=pygame.mouse.get_pos()
-        gun_rect.center=(x-50,y+50)
+        gun_rect.center=(x-SCREEN_WIDTH/11,y+SCREEN_WIDTH/11)
         target_rect.center=(x,y)
         
         # single keystroke

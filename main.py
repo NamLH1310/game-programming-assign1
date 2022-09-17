@@ -4,6 +4,9 @@ import pygame
 from pygame.locals import *
 from SpriteSheet import *
 
+##############################################
+# Screen settings
+
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 FPS = 60
@@ -29,7 +32,7 @@ gun_rect=gun.get_rect()
 zombie=Zombie('./image/zombie.png',90,60)
 sprite_list=zombie.draw_demo()
 
-
+# Main func
 def main() -> None:
     count=0 # for testing only
     
@@ -38,6 +41,7 @@ def main() -> None:
 
     # game loop
     while not game_over:
+        
         # mouse movement
         (x,y)=pygame.mouse.get_pos()
         gun_rect.center=(x-50,y+50)
@@ -50,18 +54,24 @@ def main() -> None:
             if event.type==pygame.KEYDOWN: #For testing only
                 if event.key==pygame.K_SPACE:
                     count=int((count+1)%len(sprite_list))
+                    
         clock.tick(FPS)
+        
         # redraw
         canvas.fill((255,255,255))
         canvas.blit(bg,(0,0))
+        
         #Zombie
         canvas.blit(sprite_list[count],(SCREEN_WIDTH-100,SCREEN_HEIGHT-100))
+        
         #Mouse
         canvas.blit(target,target_rect)
         canvas.blit(gun,gun_rect)
+        
         #REattach canvas
         screen.blit(canvas,(0,0))
         pygame.display.update()
+    
     pygame.quit()
 
 

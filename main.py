@@ -40,15 +40,15 @@ zombie = Zombie('./image/zombie.png', SCREEN_WIDTH // 8, SCREEN_WIDTH // 7)
 sprite_list = zombie.draw_demo()
 
 
-def renderEndScreen():
+def render_end_screen():
     
-    gameOverTxt = pygame.font.Font(None, 40).render("GAME OVER", True, pygame.Color('white'))
-    reTryTxt = pygame.font.Font(None,35).render("Press C to Retry", True, pygame.Color('white'))
-    quitTxt = pygame.font.Font(None, 35).render("Press Q to Quit", True, pygame.Color('white'))
+    game_over_txt = pygame.font.Font(None, 40).render("GAME OVER", True, pygame.Color('white'))
+    retry_txt = pygame.font.Font(None,35).render("Press R to Retry", True, pygame.Color('white'))
+    quit_txt = pygame.font.Font(None, 35).render("Press Q to Quit", True, pygame.Color('white'))
 
-    screen.blit(gameOverTxt, ((SCREEN_WIDTH-gameOverTxt.get_width())/2, (SCREEN_HEIGHT-gameOverTxt.get_height())/2-SCREEN_HEIGHT/15))
-    screen.blit(reTryTxt, ((SCREEN_WIDTH-reTryTxt.get_width())/2,(SCREEN_HEIGHT-reTryTxt.get_height())/2))
-    screen.blit(quitTxt, ((SCREEN_WIDTH-quitTxt.get_width())/2, (SCREEN_HEIGHT-quitTxt.get_height())/2+SCREEN_HEIGHT/15))
+    screen.blit(game_over_txt, ((SCREEN_WIDTH - game_over_txt.get_width()) / 2, (SCREEN_HEIGHT - game_over_txt.get_height()) /2 - SCREEN_HEIGHT / 15))
+    screen.blit(retry_txt, ((SCREEN_WIDTH - retry_txt.get_width()) / 2, (SCREEN_HEIGHT - retry_txt.get_height()) / 2))
+    screen.blit(quit_txt, ((SCREEN_WIDTH - quit_txt.get_width()) / 2, (SCREEN_HEIGHT - quit_txt.get_height()) / 2 + SCREEN_HEIGHT / 15))
     pygame.display.flip()
     pass
 
@@ -87,11 +87,11 @@ def main() -> None:
         if timer <= 0:
             timer = 0
             get_event = False
-            renderEndScreen()
+            render_end_screen()
             while not get_event:
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_q:
+                        if event.key == pygame.K_r:
                             game_over = get_event = True
                             break
                         elif event.key == pygame.K_c:

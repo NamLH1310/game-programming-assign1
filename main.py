@@ -1,6 +1,6 @@
 from pygame.locals import *
 from SpriteSheet import *
-import time
+import time, sys
 
 ##############################################
 # Screen settings
@@ -22,7 +22,7 @@ pygame.init()
 # Init screen
 canvas = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.mouse.set_visible(False)
+pygame.mouse.set_visible(True)
 
 # Background
 bg = Aim('./image/empty_field.png').draw(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -90,6 +90,9 @@ def main() -> None:
             render_end_screen()
             while not get_event:
                 for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        sys.exit()
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_q:
                             game_over = get_event = True
@@ -127,6 +130,7 @@ def main() -> None:
         pygame.display.update()
 
     pygame.quit()
+    sys.exit()
 
 
 if __name__ == '__main__':

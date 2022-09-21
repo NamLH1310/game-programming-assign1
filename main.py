@@ -91,10 +91,10 @@ def main() -> None:
             while not get_event:
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_r:
+                        if event.key == pygame.K_q:
                             game_over = get_event = True
                             break
-                        elif event.key == pygame.K_c:
+                        elif event.key == pygame.K_r:
                             get_event = True
                             timer = TIMER
                             clock = pygame.time.Clock()

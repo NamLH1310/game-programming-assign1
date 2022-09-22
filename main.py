@@ -124,13 +124,13 @@ def main() -> None:
         canvas.blit(bg, (0, 0))
 
         # Zombie
-        zombie_x = SCREEN_WIDTH - 300
-        zombie_y = SCREEN_WIDTH - 300
+        zombie_x = SCREEN_WIDTH - 250
+        zombie_y = SCREEN_WIDTH - 255
         # canvas.blit(sprite_list[count], (SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100))
         canvas.blit(sprite_list[count], (zombie_x, zombie_y))
 
         # zombie hitbox
-        draw_hitbox(canvas, zombie_x, zombie_y, SCREEN_WIDTH // 8, SCREEN_WIDTH // 7)
+        draw_hitbox(canvas, zombie_x+SCREEN_WIDTH//60, zombie_y+SCREEN_WIDTH//60, SCREEN_WIDTH //14 , SCREEN_WIDTH // 7)
         # pygame.draw.rect(canvas, (255,0,0), pygame.Rect(zombie_x, zombie_y, SCREEN_WIDTH // 8, SCREEN_WIDTH // 7),  3)
 
         # Mouse

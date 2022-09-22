@@ -10,7 +10,7 @@ SCREEN_HEIGHT = 480
 FPS = 60
 ##############################################
 # Timer settings
-TIMER = 3
+TIMER = 30
 
 
 ##############################################
@@ -50,6 +50,11 @@ def render_end_screen():
     screen.blit(retry_txt, ((SCREEN_WIDTH - retry_txt.get_width()) / 2, (SCREEN_HEIGHT - retry_txt.get_height()) / 2))
     screen.blit(quit_txt, ((SCREEN_WIDTH - quit_txt.get_width()) / 2, (SCREEN_HEIGHT - quit_txt.get_height()) / 2 + SCREEN_HEIGHT / 15))
     pygame.display.flip()
+    pass
+
+def draw_hitbox(canvas, x, y, w, h):
+    pygame.draw.rect(canvas, (255,0,0), pygame.Rect(x, y, w, h),  3)
+    
     pass
 
 # Main func
@@ -119,7 +124,14 @@ def main() -> None:
         canvas.blit(bg, (0, 0))
 
         # Zombie
-        canvas.blit(sprite_list[count], (SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100))
+        zombie_x = SCREEN_WIDTH - 300
+        zombie_y = SCREEN_WIDTH - 300
+        # canvas.blit(sprite_list[count], (SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100))
+        canvas.blit(sprite_list[count], (zombie_x, zombie_y))
+
+        # zombie hitbox
+        draw_hitbox(canvas, zombie_x, zombie_y, SCREEN_WIDTH // 8, SCREEN_WIDTH // 7)
+        # pygame.draw.rect(canvas, (255,0,0), pygame.Rect(zombie_x, zombie_y, SCREEN_WIDTH // 8, SCREEN_WIDTH // 7),  3)
 
         # Mouse
         canvas.blit(target, target_rect)

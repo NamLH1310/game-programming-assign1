@@ -16,11 +16,14 @@ class SpriteSheet:
 @dataclass
 class Zombie(SpriteSheet):
 
-    def get_sprite(self, w: int, h: int, index: int):
+    def get_sprite(self, w: int, h: int, index: int) -> pygame.Surface:
         """
         Split sprite form from zombie.png include 8 sprite
         """
         sprite = pygame.Surface((93.1, 81.6))
+        
+        # sprite.fill((0,0,0))
+        
         sprite.set_colorkey((0, 0, 0))
         sprite.blit(self.sprite_sheet, (0, 0), (558.8 + 97 * index, 260.8, 93.1, 81.6))
         scale_sprite = pygame.transform.scale(sprite, (w, h))
@@ -31,6 +34,11 @@ class Zombie(SpriteSheet):
         """
         Set base data for object zombie
         """
+        self.w = w      #   height of sub zombie
+        self.h = h
+        # self.x        #   coordinate of sub zombie
+        # self.y
+        
         self.index = 0
         self.file_name = filename
         self.sprite_sheet = pygame.image.load(self.file_name).convert()
@@ -59,6 +67,12 @@ class Zombie(SpriteSheet):
         Demo of object
         """
         return list.copy(self.sprite_list)
+    
+    # def draw_zombie_rect(self):
+    #     self.hitbox_corner = self.sprite_list[0].get_rect()
+    #     print(self.hitbox_corner)
+    #     color = (255,0,0)
+    #     pygame.draw.rect(self.get_sprite(self.w, self.h, 0), color, pygame.Rect(0, 0, 80, 80),  5)
 
 
 # Base class for All cursor related object

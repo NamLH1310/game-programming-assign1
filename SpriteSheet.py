@@ -1,62 +1,55 @@
-from dataclasses import dataclass
-
 import pygame
+from pygame import Surface
 
 
-# Base Class for sprite sheet uses
-@dataclass
-class SpriteSheet:
-    index: int  # index of sprite list
-    file_name: str  # path to sprite
-    sprite_sheet: pygame.Surface  # base sprite sheet
-    sprite_list: list[pygame.Surface]  # list of all sub sprite
+class Zombie:
+    def __init__(self,
+                 screen: pygame.Surface,
+                 filename: str,
+                 w: int,
+                 h: int,
+                 x: int,
+                 y: int,
+                 debug: bool = False) -> None:
+        """
+        Set base data for object zombie
+        """
+        assert type(screen) is Surface
+        assert type(filename) is str
+        assert type(w) is int
+        assert type(h) is int
+        assert type(x) is int
+        assert type(y) is int
+        assert type(debug) is bool
 
-
-# Zombie sprite
-@dataclass
-class Zombie(SpriteSheet):
+        self.screen = screen
+        self.w = w
+        self.h = h
+        self.x = x
+        self.y = y
+        self.hitbox_x= w/5
+        self.hitbox_y= h/6
+        self.hitbox_w= w/2
+        self.hitbox_h= h/1.18
+        self.index = 0
+        self.debug = debug
+        self.filename = filename
+        self.sprite_sheet = pygame.image.load(self.filename).convert()
+        self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
 
     def get_sprite(self, w: int, h: int, index: int) -> pygame.Surface:
         """
         Split sprite form from zombie.png include 8 sprite
         """
         sprite = pygame.Surface((93.1, 81.6))
-        
+
         # sprite.fill((0,0,0))
-        
+
         sprite.set_colorkey((0, 0, 0))
-        sprite.blit(self.sprite_sheet, (0, 0), (558.8 + 97 * index, 260.8, 93.1, 81.6))
-        scale_sprite = pygame.transform.scale(sprite, (w, h))
+        sprite.blit(self.sprite_sheet, (0, 0), (558 + 97 * index, 260, 93, 81))
+        return pygame.transform.scale(sprite, (w, h))
 
-        return scale_sprite
-
-    def __init__(self, filename: str, w: int, h: int,debug:bool) -> None:
-        """
-        Set base data for object zombie
-        """
-        self.w = w      #   height of sub zombie
-        self.h = h
-        # self.x        #   coordinate of sub zombie
-        # self.y
-        self.hitbox_x= w/5
-        self.hitbox_y= h/6
-        self.hitbox_w= w/2
-        self.hitbox_h= h/1.18
-        self.index = 0
-        self.file_name = filename
-        self.sprite_sheet = pygame.image.load(self.file_name).convert()
-        '''
-        Get the sub sprite from sprite sheet
-        '''
-        self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
-        if debug:
-            tmp=list.copy(self.sprite_list)
-            for i in range(len(tmp)):
-                x=tmp[i].get_width()
-                y=tmp[i].get_height()
-                tmp[i]=self.draw_hitbox(tmp[i],self.hitbox_x,self.hitbox_y,self.hitbox_w,self.hitbox_h)
-
-    def draw(self, die: bool, fps: int) -> None | pygame.Surface:
+    def draw(self, die: bool, fps: int) -> None:
         """
         Return base sprite
         loop if shot(die==true), all loop done in 1s
@@ -69,32 +62,32 @@ class Zombie(SpriteSheet):
         if num >= len(self.sprite_list):
             return None
 
-        return self.sprite_list[num]
+        self.screen.blit(self.sprite_list[num], (self.x, self.y))
 
-    def draw_demo(self) -> list[pygame.Surface]:
+        if self.debug:
+            self.draw_hit_box()
+
+    def get_sprites(self) -> list[pygame.Surface]:
         """
         Demo of object
         """
-        rv=list.copy(self.sprite_list)
-        
-        return rv
-    
-    def draw_hitbox(self,canvas, x, y, w, h):
-        return pygame.draw.rect(canvas, (255,0,0), pygame.Rect(x, y, w, h),  3)
-    
-    pass
+        return self.sprite_list
 
-    
-    # def draw_zombie_rect(self):
-    #     self.hitbox_corner = self.sprite_list[0].get_rect()
-    #     print(self.hitbox_corner)
-    #     color = (255,0,0)
-    #     pygame.draw.rect(self.get_sprite(self.w, self.h, 0), color, pygame.Rect(0, 0, 80, 80),  5)
+    def draw_hit_box(self):
+        pygame.draw.rect(
+            self.screen, (0, 0, 255),
+            pygame.Rect(
+                self.x,
+                self.y,
+                self.w,
+                self.h
+            ),
+            3
+        )
 
 
 # Base class for All cursor related object
-class Aim(SpriteSheet):
-
+class Aim:
     def __init__(self, filename: str):
         """
         Base Data for Aim only carry path and single sprite due to no sprite sheet import

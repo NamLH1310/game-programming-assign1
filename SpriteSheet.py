@@ -30,7 +30,7 @@ class Zombie(SpriteSheet):
 
         return scale_sprite
 
-    def __init__(self, filename: str, w: int, h: int) -> None:
+    def __init__(self, filename: str, w: int, h: int,debug:bool) -> None:
         """
         Set base data for object zombie
         """
@@ -38,7 +38,10 @@ class Zombie(SpriteSheet):
         self.h = h
         # self.x        #   coordinate of sub zombie
         # self.y
-        
+        self.hitbox_x= w/5
+        self.hitbox_y= h/6
+        self.hitbox_w= w/2
+        self.hitbox_h= h/1.18
         self.index = 0
         self.file_name = filename
         self.sprite_sheet = pygame.image.load(self.file_name).convert()
@@ -46,6 +49,12 @@ class Zombie(SpriteSheet):
         Get the sub sprite from sprite sheet
         '''
         self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
+        if debug:
+            tmp=list.copy(self.sprite_list)
+            for i in range(len(tmp)):
+                x=tmp[i].get_width()
+                y=tmp[i].get_height()
+                tmp[i]=self.draw_hitbox(tmp[i],self.hitbox_x,self.hitbox_y,self.hitbox_w,self.hitbox_h)
 
     def draw(self, die: bool, fps: int) -> None | pygame.Surface:
         """
@@ -66,7 +75,15 @@ class Zombie(SpriteSheet):
         """
         Demo of object
         """
-        return list.copy(self.sprite_list)
+        rv=list.copy(self.sprite_list)
+        
+        return rv
+    
+    def draw_hitbox(self,canvas, x, y, w, h):
+        return pygame.draw.rect(canvas, (255,0,0), pygame.Rect(x, y, w, h),  3)
+    
+    pass
+
     
     # def draw_zombie_rect(self):
     #     self.hitbox_corner = self.sprite_list[0].get_rect()

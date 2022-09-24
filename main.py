@@ -36,7 +36,7 @@ gun_rect = gun.get_rect()
 
 
 # Import char sprite
-zombie = Zombie('./image/zombie.png', SCREEN_WIDTH // 8, SCREEN_WIDTH // 7)
+zombie = Zombie('./image/zombie.png', SCREEN_WIDTH // 8, SCREEN_WIDTH // 7,True)
 sprite_list = zombie.draw_demo()
 
 
@@ -52,10 +52,6 @@ def render_end_screen():
     pygame.display.flip()
     pass
 
-def draw_hitbox(canvas, x, y, w, h):
-    pygame.draw.rect(canvas, (255,0,0), pygame.Rect(x, y, w, h),  3)
-    
-    pass
 
 # Main func
 def main() -> None:
@@ -117,20 +113,20 @@ def main() -> None:
 
 
 
-        clock.tick(FPS)
+        # clock.tick(FPS)
 
         # redraw
         canvas.fill((255, 255, 255))
         canvas.blit(bg, (0, 0))
 
         # Zombie
-        zombie_x = SCREEN_WIDTH - 250
-        zombie_y = SCREEN_WIDTH - 255
+        zombie_x = SCREEN_WIDTH - 300
+        zombie_y = SCREEN_WIDTH - 300
         # canvas.blit(sprite_list[count], (SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100))
         canvas.blit(sprite_list[count], (zombie_x, zombie_y))
 
         # zombie hitbox
-        draw_hitbox(canvas, zombie_x+SCREEN_WIDTH//60, zombie_y+SCREEN_WIDTH//60, SCREEN_WIDTH //14 , SCREEN_WIDTH // 7)
+        # draw_hitbox(canvas, zombie_x+SCREEN_WIDTH//60, zombie_y+SCREEN_WIDTH//60, SCREEN_WIDTH //14 , SCREEN_WIDTH // 7)
         # pygame.draw.rect(canvas, (255,0,0), pygame.Rect(zombie_x, zombie_y, SCREEN_WIDTH // 8, SCREEN_WIDTH // 7),  3)
 
         # Mouse

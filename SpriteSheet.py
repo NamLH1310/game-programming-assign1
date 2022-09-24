@@ -1,8 +1,10 @@
 import pygame
 from pygame import Surface
 
+from constants import FPS, SCREEN_HEIGHT
 
-class Zombie:
+
+class Zombie(pygame.sprite.Sprite):
     def __init__(self,
                  screen: pygame.Surface,
                  filename: str,
@@ -10,6 +12,7 @@ class Zombie:
                  h: int,
                  x: int,
                  y: int,
+                 velocity: int,
                  debug: bool = False) -> None:
         """
         Set base data for object zombie
@@ -22,56 +25,58 @@ class Zombie:
         assert type(y) is int
         assert type(debug) is bool
 
+        super().__init__()
+        self.num_frames = 0
         self.screen = screen
         self.w = w
         self.h = h
         self.x = x
         self.y = y
-        self.hitbox_x= w/5
-        self.hitbox_y= h/6
-        self.hitbox_w= w/2
-        self.hitbox_h= h/1.18
         self.index = 0
         self.debug = debug
         self.filename = filename
+        self.scale = 2
+        self.velocity = velocity
+        self.is_dead = False
         self.sprite_sheet = pygame.image.load(self.filename).convert()
-        self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
+        self.sprite_list = list[Surface]([
+            self.get_sprite(0, 188, self.w, self.h),
+            self.get_sprite(200, 188, self.w, self.h),
+            self.get_sprite(300, 188, self.w, self.h),
+            self.get_sprite(390, 188, self.w, self.h),
+            self.get_sprite(485, 188, self.w, self.h),
+            self.get_sprite(590, 188, self.w, self.h),
+        ])
 
-    def get_sprite(self, w: int, h: int, index: int) -> pygame.Surface:
+    def get_sprite(self, x: int, y: int, w: int, h: int) -> Surface:
         """
         Split sprite form from zombie.png include 8 sprite
         """
-        sprite = pygame.Surface((93.1, 81.6))
-
-        # sprite.fill((0,0,0))
-
+        sprite = pygame.Surface((w, h))
         sprite.set_colorkey((0, 0, 0))
-        sprite.blit(self.sprite_sheet, (0, 0), (558 + 97 * index, 260, 93, 81))
-        return pygame.transform.scale(sprite, (w, h))
+        sprite.blit(self.sprite_sheet, (0, 0), (x, y, w, h))
+        return pygame.transform.scale(sprite, (w * self.scale, h * self.scale))
 
-    def draw(self, die: bool, fps: int) -> None:
+    def draw(self) -> None:
         """
         Return base sprite
         loop if shot(die==true), all loop done in 1s
         """
-        if die:
-            self.index += 1
+        self.num_frames += 1
+        if self.num_frames >= FPS >> 1:
+            self.num_frames = 0
+            self.index = (self.index + 1) % len(self.sprite_list)
+            if self.y < SCREEN_HEIGHT - self.h:
+                self.y += self.velocity
 
-        num = self.index // (fps // 8)
+        if self.y >= SCREEN_HEIGHT - self.h:
+            self.is_dead = True
+            self.kill()
 
-        if num >= len(self.sprite_list):
-            return None
-
-        self.screen.blit(self.sprite_list[num], (self.x, self.y))
+        self.screen.blit(self.sprite_list[self.index], (self.x, self.y))
 
         if self.debug:
             self.draw_hit_box()
-
-    def get_sprites(self) -> list[pygame.Surface]:
-        """
-        Demo of object
-        """
-        return self.sprite_list
 
     def draw_hit_box(self):
         pygame.draw.rect(
@@ -79,8 +84,8 @@ class Zombie:
             pygame.Rect(
                 self.x,
                 self.y,
-                self.w,
-                self.h
+                self.w * self.scale,
+                self.h * self.scale
             ),
             3
         )

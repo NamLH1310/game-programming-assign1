@@ -38,7 +38,8 @@ class EntitySystem:
                                      h=70,
                                      x=random.randint(0, SCREEN_WIDTH - 35),
                                      y=random.randint((SCREEN_HEIGHT >> 1) - 140, SCREEN_HEIGHT >> 1),
-                                     velocity=random.randint(20, 30)))
+                                     velocity=random.randint(20, 30),
+                                     debug=True))
 
     def draw(self):
         self.generate_random_zombie()
@@ -56,7 +57,7 @@ class EntitySystem:
         
     def shot(self,x:int,y:int):
         for z in self.entities:
-            if x-z.x<z.w and y-z.y<z.h:
+            if x-z.x<z.w*z.scale and y-z.y<z.h*z.scale:
                 z.is_dead=True
                 self.Kill+=1
                 break

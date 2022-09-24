@@ -1,7 +1,9 @@
+import random
+
 from pygame.locals import *
 
 from SpriteSheet import *
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES
 
 pygame.init()
 
@@ -19,15 +21,37 @@ gun = Aim('./image/gun.png').draw(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 4)
 target_rect = target.get_rect()
 gun_rect = gun.get_rect()
 
-# Import char sprite
-zombie = Zombie(screen=canvas,
-                filename='./image/zombie.png',
-                w=93,
-                h=81,
-                x=SCREEN_WIDTH - 250,
-                y=SCREEN_WIDTH - 255,
-                debug=True)
-sprite_list = zombie.get_sprites()
+
+# sprite_list = zombie.get_sprites()
+
+class EntitySystem:
+    def __init__(self):
+        self.entities = set[Zombie]()
+        self.deleted_entities = list[Zombie]()
+
+    def generate_random_zombie(self):
+        if len(self.entities) <= MAX_ZOMBIES and random.randint(0, 1) == 1:
+            self.entities.add(Zombie(screen=canvas,
+                                     filename='./image/zombie.png',
+                                     w=35,
+                                     h=70,
+                                     x=random.randint(0, SCREEN_WIDTH - 35),
+                                     y=random.randint((SCREEN_HEIGHT >> 1) - 140, SCREEN_HEIGHT >> 1),
+                                     velocity=random.randint(20, 30)))
+
+    def draw(self):
+        self.generate_random_zombie()
+
+        for z in self.entities:
+            if z.is_dead:
+                self.deleted_entities.append(z)
+            else:
+                z.draw()
+
+        for z in self.deleted_entities:
+            self.entities.remove(z)
+
+        self.deleted_entities.clear()
 
 
 def render_end_screen():
@@ -43,12 +67,12 @@ def render_end_screen():
     pygame.display.flip()
 
 
-def draw() -> None:
+def draw(entities: EntitySystem) -> None:
     canvas.fill((255, 255, 255))
     canvas.blit(bg, (0, 0))
 
     # Zombie
-    zombie.draw(False, FPS)
+    entities.draw()
     # Mouse
     canvas.blit(target, target_rect)
     canvas.blit(gun, gun_rect)
@@ -60,15 +84,14 @@ def draw() -> None:
 
 # Main func
 def main() -> None:
-    count = 0  # for debug only
-
     clock = pygame.time.Clock()
     game_over = False
 
     # (Delta time since last tick)
     timer = TIMER
     delta_t = 0
-
+    entities = EntitySystem()
+    entities.generate_random_zombie()
     # game loop
     while not game_over:
 
@@ -83,7 +106,7 @@ def main() -> None:
             if event.type == QUIT:
                 game_over = True
 
-        count = (count + 1) % len(sprite_list)
+        # count = (count + 1) % len(sprite_list)
 
         # Prompt end-game screen
         timer -= delta_t
@@ -113,7 +136,7 @@ def main() -> None:
         delta_t = clock.tick(FPS) / 1000
 
         # redraw
-        draw()
+        draw(entities)
 
     pygame.quit()
 

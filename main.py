@@ -28,6 +28,7 @@ class EntitySystem:
     def __init__(self):
         self.entities = set[Zombie]()
         self.deleted_entities = list[Zombie]()
+        self.Kill = 0
 
     def generate_random_zombie(self):
         if len(self.entities) <= MAX_ZOMBIES and random.randint(0, 1) == 1:
@@ -52,15 +53,26 @@ class EntitySystem:
             self.entities.remove(z)
 
         self.deleted_entities.clear()
+        
+    def shot(self,x:int,y:int):
+        for z in self.entities:
+            if x-z.x<z.w and y-z.y<z.h:
+                z.is_dead=True
+                self.Kill+=1
+                break
 
 
-def render_end_screen():
+def render_end_screen(entites:EntitySystem):
     game_over_txt = pygame.font.Font(None, 40).render("GAME OVER", True, pygame.Color('white'))
     retry_txt = pygame.font.Font(None, 35).render("Press R to Retry", True, pygame.Color('white'))
     quit_txt = pygame.font.Font(None, 35).render("Press Q to Quit", True, pygame.Color('white'))
+    score_txt = pygame.font.Font(None,35).render("SCORE: "+str(entites.Kill),True,pygame.Color('White'))
 
     screen.blit(game_over_txt, ((SCREEN_WIDTH - game_over_txt.get_width()) // 2,
                                 (SCREEN_HEIGHT - game_over_txt.get_height()) // 2 - SCREEN_HEIGHT // 15))
+    screen.blit(score_txt, ((SCREEN_WIDTH - score_txt.get_width()) // 2,
+                                (SCREEN_HEIGHT - score_txt.get_height()) // 2 - SCREEN_HEIGHT // 7))
+    
     screen.blit(retry_txt, ((SCREEN_WIDTH - retry_txt.get_width()) // 2, (SCREEN_HEIGHT - retry_txt.get_height()) // 2))
     screen.blit(quit_txt, (
         (SCREEN_WIDTH - quit_txt.get_width()) // 2, (SCREEN_HEIGHT - quit_txt.get_height()) // 2 + SCREEN_HEIGHT // 15))
@@ -105,6 +117,9 @@ def main() -> None:
         for event in pygame.event.get():
             if event.type == QUIT:
                 game_over = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                entities.shot(pos[0],pos[1])
 
         # count = (count + 1) % len(sprite_list)
 
@@ -113,7 +128,7 @@ def main() -> None:
         if timer <= 0:
             timer = 0
             get_event = False
-            render_end_screen()
+            render_end_screen(entities)
             while not get_event:
                 for event in pygame.event.get():
                     if event.type == QUIT:

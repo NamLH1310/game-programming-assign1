@@ -68,10 +68,9 @@ class Zombie(SpriteSheet):
         if die:
             self.index += 1
 
-        num = self.index // (fps // 8)
+        num = self.index // (fps // 12)
 
         if num >= len(self.sprite_list):
-            self.index=0
             return None
 
         return self.sprite_list[num]
@@ -133,6 +132,9 @@ class Horde:
         self.clear=0
         i=0
         counter=0
+        
+        for j in range(len(self.zombies)):
+            self.zombies[j].index=0
         while(i<len(self.cors)):
             x=round((screenWidth-dis-self.width)*random()+dis)
             y=round((screenHeight-dis-self.height)*random()+dis)
@@ -146,11 +148,17 @@ class Horde:
     
     def spawn(self,canvas:pygame.Surface):
         for i in range(len(self.cors)):
-            canvas.blit(self.zombies[i].draw(False,60),self.cors[i])
+            zombie=self.zombies[i].draw(False,60)
+            if zombie is None:
+                continue
+            canvas.blit(zombie,self.cors[i])
             
     def checkClear(self,screenWidth:int,screenHeight:int,dis:int):
+        
         if(self.clear==len(self.zombies)):
             self.randomSpawn(screenWidth,screenHeight,dis)
+    def reset(self,index:int):
+        self.zombies[index].index=0
     
     def shoot(self, x,y):
         clear+=1

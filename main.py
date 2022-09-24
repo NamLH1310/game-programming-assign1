@@ -6,6 +6,7 @@ from SpriteSheet import *
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES
 
 pygame.init()
+# pygame.mixer.init()
 
 # Init screen
 canvas = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -20,7 +21,10 @@ target = Aim('./image/aim.png').draw(SCREEN_WIDTH // 8, SCREEN_WIDTH // 8)
 gun = Aim('./image/gun.png').draw(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 4)
 target_rect = target.get_rect()
 gun_rect = gun.get_rect()
-
+# Sound
+bgm = pygame.mixer.Sound('./sound/background.ogg')
+gun_shot = pygame.mixer.Sound('./sound/gun-shot.ogg')
+screams = pygame.mixer.Sound('./sound/screams.ogg')
 
 # sprite_list = zombie.get_sprites()
 
@@ -57,7 +61,8 @@ class EntitySystem:
         
     def shot(self,x:int,y:int):
         for z in self.entities:
-            if x-z.x<z.w*z.scale and y-z.y<z.h*z.scale:
+            if x-z.x>0 and y-z.y>0 and x-z.x<z.w*z.scale and y-z.y<z.h*z.scale:
+                screams.play()
                 z.is_dead=True
                 self.Kill+=1
                 break
@@ -99,12 +104,13 @@ def draw(entities: EntitySystem) -> None:
 def main() -> None:
     clock = pygame.time.Clock()
     game_over = False
-
     # (Delta time since last tick)
     timer = TIMER
     delta_t = 0
     entities = EntitySystem()
     entities.generate_random_zombie()
+    # BGM Start
+    bgm.play(-1)
     # game loop
     while not game_over:
 
@@ -119,6 +125,7 @@ def main() -> None:
             if event.type == QUIT:
                 game_over = True
             if event.type == pygame.MOUSEBUTTONDOWN:
+                gun_shot.play()
                 pos = pygame.mouse.get_pos()
                 entities.shot(pos[0],pos[1])
 

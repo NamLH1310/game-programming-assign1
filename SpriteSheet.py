@@ -1,71 +1,66 @@
 from dataclasses import dataclass
-from operator import truediv
 from random import randbytes, randint, random
-from re import I
+from re import X
+from tempfile import tempdir
 from typing import Tuple
 
 import pygame
+from pygame import Surface
+
+from constants import FPS
 
 
-# Base Class for sprite sheet uses
-@dataclass
-class SpriteSheet:
-    index: int  # index of sprite list
-    file_name: str  # path to sprite
-    sprite_sheet: pygame.Surface  # base sprite sheet
-    sprite_list: list[pygame.Surface]  # list of all sub sprite
+class Zombie:
+    def __init__(self,
+                 filename: str,
+                 w: int,
+                 h: int,
+                 x: int,
+                 y: int,
+                 debug: bool = False) -> None:
+        """
+        Set base data for object zombie
+        """
+        assert type(filename) is str
+        assert type(w) is int
+        assert type(h) is int
+        assert type(x) is int
+        assert type(y) is int
+        assert type(debug) is bool
 
-
-# Zombie sprite
-@dataclass
-class Zombie(SpriteSheet):
+        self.x=x
+        self.y=y
+        self.w = w
+        self.h = h
+        self.hitbox_x= x+w/5
+        self.hitbox_y= y+h/6
+        self.hitbox_w= w/2
+        self.hitbox_h= h/1.18
+        self.die=False
+        self.index = 0
+        self.debug = debug
+        self.filename = filename
+        self.sprite_sheet = pygame.image.load(self.filename).convert()
+        self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
 
     def get_sprite(self, w: int, h: int, index: int) -> pygame.Surface:
         """
         Split sprite form from zombie.png include 8 sprite
         """
         sprite = pygame.Surface((93.1, 81.6))
-        
+
         # sprite.fill((0,0,0))
-        
+
         sprite.set_colorkey((0, 0, 0))
-        sprite.blit(self.sprite_sheet, (0, 0), (558.8 + 97 * index, 260.8, 93.1, 81.6))
-        scale_sprite = pygame.transform.scale(sprite, (w, h))
+        sprite.blit(self.sprite_sheet, (0, 0), (558 + 97 * index, 260, 93, 81))
+        return pygame.transform.scale(sprite, (w, h))
 
-        return scale_sprite
-
-    def __init__(self, filename: str, w: int, h: int,debug:bool) -> None:
-        """
-        Set base data for object zombie
-        """
-        self.w = w      #   height of sub zombie
-        self.h = h
-        # self.x        #   coordinate of sub zombie
-        # self.y
-        self.hitbox_x= w/5
-        self.hitbox_y= h/6
-        self.hitbox_w= w/2
-        self.hitbox_h= h/1.18
-        self.index = 0
-        self.file_name = filename
-        self.sprite_sheet = pygame.image.load(self.file_name).convert()
-        '''
-        Get the sub sprite from sprite sheet
-        '''
-        self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
-        if debug:
-            tmp=list.copy(self.sprite_list)
-            for i in range(len(tmp)):
-                x=tmp[i].get_width()
-                y=tmp[i].get_height()
-                tmp[i]=self.draw_hitbox(tmp[i],self.hitbox_x,self.hitbox_y,self.hitbox_w,self.hitbox_h)
-
-    def draw(self, die: bool, fps: int) -> None | pygame.Surface:
+    def draw(self, fps: int) -> None:
         """
         Return base sprite
         loop if shot(die==true), all loop done in 1s
         """
-        if die:
+        if self.die:
             self.index += 1
 
         num = self.index // (fps // 12)
@@ -73,21 +68,38 @@ class Zombie(SpriteSheet):
         if num >= len(self.sprite_list):
             return None
 
+        if self.debug:
+            self.draw_hit_box(num)
+
         return self.sprite_list[num]
 
-    def draw_demo(self) -> list[pygame.Surface]:
+    def get_sprites(self) -> list[pygame.Surface]:
         """
         Demo of object
         """
         rv=list.copy(self.sprite_list)
         
         return rv
-    def draw_hitbox(self,canvas, x, y, w, h):
-        return pygame.draw.rect(canvas, (255,0,0), pygame.Rect(x, y, w, h),  3)
+    def draw_hit_box(self, index:int):
+        pygame.draw.rect(
+            self.sprite_list[index], (255, 0, 0),
+            pygame.Rect(
+                self.hitbox_x-self.x,
+                self.hitbox_y-self.y,
+                self.hitbox_w,
+                self.hitbox_y
+            ),
+            3
+        )
+    def setHitBox(self,x:int,y:int):
+        self.x=x
+        self.y=y
+        self.hitbox_x=x+self.w/5
+        self.hitbox_y=y+self.h/6
+
 
 # Base class for All cursor related object
-class Aim(SpriteSheet):
-
+class Aim:
     def __init__(self, filename: str):
         """
         Base Data for Aim only carry path and single sprite due to no sprite sheet import
@@ -117,7 +129,7 @@ class Horde:
         self.zombies=list()
         self.cors=list()
         for i in range(num):
-            self.zombies.append(Zombie('./image/zombie.png',width,height,debug))
+            self.zombies.append(Zombie('./image/zombie.png',width,height,0,0,debug))
             self.cors.append((0,0))
         
     def _check_(self,sw,sh ,x:int ,y:int):
@@ -140,6 +152,7 @@ class Horde:
             y=round((screenHeight-dis-self.height)*random()+dis)
             if self._check_(screenWidth,screenHeight,x,y):
                 self.cors.__setitem__(i,(x,y))
+                self.zombies[i].setHitBox(x,y)
                 i+=1
             elif counter>5:
                 continue
@@ -148,14 +161,14 @@ class Horde:
     
     def spawn(self,canvas:pygame.Surface):
         for i in range(len(self.cors)):
-            zombie=self.zombies[i].draw(False,60)
+            zombie=self.zombies[i].draw(FPS)
             if zombie is None:
                 continue
             canvas.blit(zombie,self.cors[i])
             
-    def checkClear(self,screenWidth:int,screenHeight:int,dis:int):
-        
+    def checkClear(self,screenWidth:int,screenHeight:int,dis:int):   
         if(self.clear==len(self.zombies)):
+            self.clear=0
             self.randomSpawn(screenWidth,screenHeight,dis)
     def reset(self,index:int):
         self.zombies[index].index=0

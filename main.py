@@ -38,6 +38,8 @@ gun_rect = gun.get_rect()
 # Import char sprite
 zombie = Zombie('./image/zombie.png', SCREEN_WIDTH // 8, SCREEN_WIDTH // 7,True)
 sprite_list = zombie.draw_demo()
+zombieHorde=Horde(5,SCREEN_WIDTH // 8, SCREEN_WIDTH // 7,True)
+zombieHorde.randomSpawn(SCREEN_WIDTH,SCREEN_HEIGHT,50)
 
 
 def render_end_screen():
@@ -68,6 +70,7 @@ def main() -> None:
     while not game_over:
 
         # mouse movement
+        zombieHorde.checkClear(SCREEN_WIDTH,SCREEN_HEIGHT,50)
         x, y = pygame.mouse.get_pos()
         gun_rect.center = (x - SCREEN_WIDTH / 11, y + SCREEN_WIDTH / 11)
 
@@ -79,6 +82,7 @@ def main() -> None:
                 game_over = True
             if event.type == pygame.KEYDOWN:  # For debug only
                 if event.key == pygame.K_SPACE:
+                    zombieHorde.randomSpawn(SCREEN_WIDTH,SCREEN_HEIGHT,50)
                     count = int((count + 1) % len(sprite_list))
 
         
@@ -123,8 +127,8 @@ def main() -> None:
         zombie_x = SCREEN_WIDTH - 300
         zombie_y = SCREEN_WIDTH - 300
         # canvas.blit(sprite_list[count], (SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100))
-        canvas.blit(sprite_list[count], (zombie_x, zombie_y))
-
+        # canvas.blit(sprite_list[count], (zombie_x, zombie_y))
+        zombieHorde.spawn(canvas)
         # zombie hitbox
         # draw_hitbox(canvas, zombie_x+SCREEN_WIDTH//60, zombie_y+SCREEN_WIDTH//60, SCREEN_WIDTH //14 , SCREEN_WIDTH // 7)
         # pygame.draw.rect(canvas, (255,0,0), pygame.Rect(zombie_x, zombie_y, SCREEN_WIDTH // 8, SCREEN_WIDTH // 7),  3)

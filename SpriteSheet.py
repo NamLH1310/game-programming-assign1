@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from operator import truediv
+from random import randbytes, randint, random
+from re import I
+from typing import Tuple
 
 import pygame
 
@@ -67,6 +71,7 @@ class Zombie(SpriteSheet):
         num = self.index // (fps // 8)
 
         if num >= len(self.sprite_list):
+            self.index=0
             return None
 
         return self.sprite_list[num]
@@ -78,19 +83,8 @@ class Zombie(SpriteSheet):
         rv=list.copy(self.sprite_list)
         
         return rv
-    
     def draw_hitbox(self,canvas, x, y, w, h):
         return pygame.draw.rect(canvas, (255,0,0), pygame.Rect(x, y, w, h),  3)
-    
-    pass
-
-    
-    # def draw_zombie_rect(self):
-    #     self.hitbox_corner = self.sprite_list[0].get_rect()
-    #     print(self.hitbox_corner)
-    #     color = (255,0,0)
-    #     pygame.draw.rect(self.get_sprite(self.w, self.h, 0), color, pygame.Rect(0, 0, 80, 80),  5)
-
 
 # Base class for All cursor related object
 class Aim(SpriteSheet):
@@ -110,3 +104,54 @@ class Aim(SpriteSheet):
             h = self.sprite_sheet.get_height
 
         return pygame.transform.scale(self.sprite_sheet, (w, h))
+
+class Horde:
+    zombies:list[Zombie]
+    cors:list[Tuple[int]]
+    height:int
+    width:int
+    clear:int
+    
+    def __init__(self, num:int, width:int, height:int, debug:bool) -> None:
+        self.width=width
+        self.height=height
+        self.zombies=list()
+        self.cors=list()
+        for i in range(num):
+            self.zombies.append(Zombie('./image/zombie.png',width,height,debug))
+            self.cors.append((0,0))
+        
+    def _check_(self,sw,sh ,x:int ,y:int):
+        for i in self.cors:
+            disX=abs(x-i[0])
+            disY=abs(y-i[1])
+            if disX<self.width//2 or disY<self.height//2:
+                return False
+        return True
+        
+    def randomSpawn(self, screenWidth:int,screenHeight:int,dis:int):
+        self.clear=0
+        i=0
+        counter=0
+        while(i<len(self.cors)):
+            x=round((screenWidth-dis-self.width)*random()+dis)
+            y=round((screenHeight-dis-self.height)*random()+dis)
+            if self._check_(screenWidth,screenHeight,x,y):
+                self.cors.__setitem__(i,(x,y))
+                i+=1
+            elif counter>5:
+                continue
+            else:
+                counter+=1
+    
+    def spawn(self,canvas:pygame.Surface):
+        for i in range(len(self.cors)):
+            canvas.blit(self.zombies[i].draw(False,60),self.cors[i])
+            
+    def checkClear(self,screenWidth:int,screenHeight:int,dis:int):
+        if(self.clear==len(self.zombies)):
+            self.randomSpawn(screenWidth,screenHeight,dis)
+    
+    def shoot(self, x,y):
+        clear+=1
+        pass

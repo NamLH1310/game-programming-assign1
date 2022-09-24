@@ -27,8 +27,8 @@ class Zombie:
         self.h = h
         self.x = x
         self.y = y
-        self.hitbox_x= w/5
-        self.hitbox_y= h/6
+        self.hitbox_x= self.x+w/5
+        self.hitbox_y= self.y+h/6
         self.hitbox_w= w/2
         self.hitbox_h= h/1.18
         self.index = 0
@@ -77,10 +77,10 @@ class Zombie:
         pygame.draw.rect(
             self.screen, (0, 0, 255),
             pygame.Rect(
-                self.x,
-                self.y,
-                self.w,
-                self.h
+                self.hitbox_x,
+                self.hitbox_y,
+                self.hitbox_w,
+                self.hitbox_h
             ),
             3
         )

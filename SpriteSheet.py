@@ -69,7 +69,7 @@ class Zombie(pygame.sprite.Sprite):
             if self.y < SCREEN_HEIGHT - self.h:
                 self.y += self.velocity
 
-        if self.y >= SCREEN_HEIGHT - self.h:
+        if self.y >= SCREEN_HEIGHT - self.h or self.is_dead:
             self.is_dead = True
             self.kill()
 

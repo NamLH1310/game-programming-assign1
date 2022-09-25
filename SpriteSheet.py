@@ -1,69 +1,102 @@
-from dataclasses import dataclass
-
 import pygame
+from pygame import Surface
+
+from constants import FPS, SCREEN_HEIGHT
 
 
-# Base Class for sprite sheet uses
-@dataclass
-class SpriteSheet:
-    index: int  # index of sprite list
-    file_name: str  # path to sprite
-    sprite_sheet: pygame.Surface  # base sprite sheet
-    sprite_list: list[pygame.Surface]  # list of all sub sprite
-
-
-# Zombie sprite
-@dataclass
-class Zombie(SpriteSheet):
-
-    def get_sprite(self, w: int, h: int, index: int):
-        """
-        Split sprite form from zombie.png include 8 sprite
-        """
-        sprite = pygame.Surface((93.1, 81.6))
-        sprite.set_colorkey((0, 0, 0))
-        sprite.blit(self.sprite_sheet, (0, 0), (558.8 + 97 * index, 260.8, 93.1, 81.6))
-        scale_sprite = pygame.transform.scale(sprite, (w, h))
-
-        return scale_sprite
-
-    def __init__(self, filename: str, w: int, h: int) -> None:
+class Zombie(pygame.sprite.Sprite):
+    def __init__(self,
+                 screen: pygame.Surface,
+                 filename: str,
+                 w: int,
+                 h: int,
+                 x: int,
+                 y: int,
+                 velocity: int,
+                 debug: bool = False) -> None:
         """
         Set base data for object zombie
         """
-        self.index = 0
-        self.file_name = filename
-        self.sprite_sheet = pygame.image.load(self.file_name).convert()
-        '''
-        Get the sub sprite from sprite sheet
-        '''
-        self.sprite_list = [self.get_sprite(w, h, i) for i in range(8)]
+        assert type(screen) is Surface
+        assert type(filename) is str
+        assert type(w) is int
+        assert type(h) is int
+        assert type(x) is int
+        assert type(y) is int
+        assert type(debug) is bool
 
-    def draw(self, die: bool, fps: int) -> None | pygame.Surface:
+        super().__init__()
+        self.num_frames = 0
+        self.screen = screen
+        self.w = w
+        self.h = h
+        self.x = x
+        self.y = y
+        self.index = 0
+        self.debug = debug
+        self.filename = filename
+        self.scale = 2
+        self.velocity = velocity
+        self.is_dead = False
+        self.reach_destination = False
+        self.sprite_sheet = pygame.image.load(self.filename).convert()
+        self.sprite_list = list[Surface]([
+            self.get_sprite(0, 188, self.w, self.h),
+            self.get_sprite(200, 188, self.w, self.h),
+            self.get_sprite(300, 188, self.w, self.h),
+            self.get_sprite(390, 188, self.w, self.h),
+            self.get_sprite(485, 188, self.w, self.h),
+            self.get_sprite(590, 188, self.w, self.h),
+        ])
+
+    def get_sprite(self, x: int, y: int, w: int, h: int) -> Surface:
+        """
+        Split sprite form from zombie.png include 8 sprite
+        """
+        sprite = pygame.Surface((w, h))
+        sprite.set_colorkey((0, 0, 0))
+        sprite.blit(self.sprite_sheet, (0, 0), (x, y, w, h))
+        return pygame.transform.scale(sprite, (w * self.scale, h * self.scale))
+
+    def draw(self) -> None:
         """
         Return base sprite
         loop if shot(die==true), all loop done in 1s
         """
-        if die:
-            self.index += 1
+        self.num_frames += 1
+        if self.num_frames >= FPS >> 1:
+            self.num_frames = 0
+            self.index = (self.index + 1) % len(self.sprite_list)
+            if self.y < SCREEN_HEIGHT - self.h:
+                self.y += self.velocity
 
-        num = self.index // (fps // 8)
+        if self.y >= SCREEN_HEIGHT - self.h:
+            if not self.is_dead:
+                self.reach_destination = True
 
-        if num >= len(self.sprite_list):
-            return None
+            self.is_dead = True
+            self.kill()
 
-        return self.sprite_list[num]
+        self.screen.blit(self.sprite_list[self.index], (self.x, self.y))
 
-    def draw_demo(self) -> list[pygame.Surface]:
-        """
-        Demo of object
-        """
-        return list.copy(self.sprite_list)
+        if self.debug:
+            self.draw_hit_box()
+
+    def draw_hit_box(self):
+        pygame.draw.rect(
+            self.screen, (0, 0, 255),
+            pygame.Rect(
+                self.x,
+                self.y,
+                self.w * self.scale,
+                self.h * self.scale
+            ),
+            3
+        )
 
 
 # Base class for All cursor related object
-class Aim(SpriteSheet):
-
+class Aim:
     def __init__(self, filename: str):
         """
         Base Data for Aim only carry path and single sprite due to no sprite sheet import

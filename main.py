@@ -3,7 +3,7 @@ import random
 from pygame.locals import *
 
 from SpriteSheet import *
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES, HEALTH
 
 pygame.init()
 # pygame.mixer.init()
@@ -25,6 +25,7 @@ gun_rect = gun.get_rect()
 bgm = pygame.mixer.Sound('./sound/background.ogg')
 gun_shot = pygame.mixer.Sound('./sound/gun-shot.ogg')
 screams = pygame.mixer.Sound('./sound/screams.ogg')
+health = HEALTH
 
 
 # sprite_list = zombie.get_sprites()
@@ -43,10 +44,10 @@ class EntitySystem:
                                      h=70,
                                      x=random.randint(0, SCREEN_WIDTH - 35),
                                      y=random.randint((SCREEN_HEIGHT >> 1) - 140, SCREEN_HEIGHT >> 1),
-                                     velocity=random.randint(20, 30),
-                                     debug=True))
+                                     velocity=random.randint(20, 30)))
 
     def draw(self):
+        global health
         self.generate_random_zombie()
 
         for z in self.entities:
@@ -54,6 +55,9 @@ class EntitySystem:
                 self.deleted_entities.append(z)
             else:
                 z.draw()
+
+            if z.reach_destination:
+                health -= 10
 
         for z in self.deleted_entities:
             self.entities.remove(z)
@@ -103,10 +107,11 @@ def draw(entities: EntitySystem) -> None:
 
 # Main func
 def main() -> None:
+    global health
     clock = pygame.time.Clock()
     game_over = False
     # (Delta time since last tick)
-    timer = TIMER
+    timer: float = TIMER
     delta_t = 0
     entities = EntitySystem()
     entities.generate_random_zombie()
@@ -130,11 +135,9 @@ def main() -> None:
                 pos = pygame.mouse.get_pos()
                 entities.shot(pos[0], pos[1])
 
-        # count = (count + 1) % len(sprite_list)
-
         # Prompt end-game screen
         timer -= delta_t
-        if timer <= 0:
+        if timer <= 0 or health <= 0:
             timer = 0
             get_event = False
             render_end_screen(entities)
@@ -154,8 +157,12 @@ def main() -> None:
                             timer = TIMER
 
         # Displaying remaining time
-        txt = pygame.font.Font(None, 40).render(str(round(timer, 2)), True, pygame.Color('black'))
-        screen.blit(txt, (5, 5))
+        timer_text = pygame.font.Font(None, 40).render(f'{round(timer, 2)}', True, pygame.Color('black'))
+        screen.blit(timer_text, (5, 5))
+
+        health_text = pygame.font.Font(None, 40).render(f'HEALTH: {health}', True, pygame.Color('red'))
+        screen.blit(health_text, (100, 5))
+
         pygame.display.flip()
         delta_t = clock.tick(FPS) / 1000
 

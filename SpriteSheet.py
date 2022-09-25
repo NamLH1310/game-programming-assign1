@@ -38,6 +38,7 @@ class Zombie(pygame.sprite.Sprite):
         self.scale = 2
         self.velocity = velocity
         self.is_dead = False
+        self.reach_destination = False
         self.sprite_sheet = pygame.image.load(self.filename).convert()
         self.sprite_list = list[Surface]([
             self.get_sprite(0, 188, self.w, self.h),
@@ -69,7 +70,10 @@ class Zombie(pygame.sprite.Sprite):
             if self.y < SCREEN_HEIGHT - self.h:
                 self.y += self.velocity
 
-        if self.y >= SCREEN_HEIGHT - self.h or self.is_dead:
+        if self.y >= SCREEN_HEIGHT - self.h:
+            if not self.is_dead:
+                self.reach_destination = True
+
             self.is_dead = True
             self.kill()
 

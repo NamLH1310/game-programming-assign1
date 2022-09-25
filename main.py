@@ -3,7 +3,7 @@ import random
 from pygame.locals import *
 
 from SpriteSheet import *
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES, HEALTH
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES, HEALTH, MAX_BULLETS
 
 pygame.init()
 # pygame.mixer.init()
@@ -36,6 +36,9 @@ class EntitySystem:
         self.deleted_entities = list[Zombie]()
         self.kill_count = 0
         self.shot_count = 0
+        self.bullets = MAX_BULLETS
+        self.is_reloading = False
+        self.num_frames_reload = 0
 
     def generate_random_zombie(self):
         if len(self.entities) <= MAX_ZOMBIES and random.randint(0, 1) == 1:
@@ -48,8 +51,14 @@ class EntitySystem:
                                      velocity=random.randint(20, 30)))
 
     def draw(self):
+        self.log()
         global health
         self.generate_random_zombie()
+        if self.is_reloading:
+            self.num_frames_reload += 1
+            if self.num_frames_reload >= FPS + (FPS >> 1):
+                self.is_reloading = False
+                self.num_frames_reload = 0
 
         for z in self.entities:
             if z.is_dead:
@@ -66,13 +75,27 @@ class EntitySystem:
         self.deleted_entities.clear()
 
     def shot(self, x: int, y: int):
+        if self.is_reloading:
+            return
+
+        gun_shot.play()
         self.shot_count += 1
+        if self.bullets == 0:
+            self.is_reloading = True
+            self.bullets = MAX_BULLETS
+        self.bullets -= 1
+
         for z in self.entities:
             if 0 < x - z.x < z.w * z.scale and 0 < y - z.y < z.h * z.scale:
                 screams.play()
                 z.is_dead = True
                 self.kill_count += 1
                 break
+
+    def log(self):
+        print(f'bullets: {self.bullets}')
+        print(f'is reloading: {self.is_reloading}')
+        print()
 
 
 def render_end_screen(entities: EntitySystem):
@@ -155,7 +178,6 @@ def main() -> None:
             if event.type == QUIT:
                 game_over = True
             if event.type == pygame.MOUSEBUTTONDOWN:
-                gun_shot.play()
                 pos = pygame.mouse.get_pos()
                 entities.shot(pos[0], pos[1])
 

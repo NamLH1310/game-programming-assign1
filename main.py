@@ -3,7 +3,7 @@ import random
 from pygame.locals import *
 
 from SpriteSheet import *
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES, HEALTH, MAX_BULLETS
+from constants import BRIGHT_GREEN, BRIGHT_RED, GREEN, RED, SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TIMER, MAX_ZOMBIES, HEALTH, MAX_BULLETS
 
 pygame.init()
 # pygame.mixer.init()
@@ -29,6 +29,7 @@ health = HEALTH
 
 
 # sprite_list = zombie.get_sprites()
+
 
 class EntitySystem:
     def __init__(self):
@@ -98,7 +99,26 @@ class EntitySystem:
         print()
 
 
+
+# For bullet
+bullet = pygame.image.load("./image/bullet.png").convert_alpha()
+bullet_img = pygame.transform.scale(bullet, (bullet.get_width() // 10, bullet.get_height()// 10))
+multiply_txt = pygame.font.Font(None,35).render("X", True, pygame.Color('black'))
+
+
 def render_end_screen(entities: EntitySystem):
+
+    pygame.draw.rect(
+        screen,
+        "beige",
+        (
+            SCREEN_WIDTH // 4,
+            SCREEN_HEIGHT // 4,
+            SCREEN_WIDTH // 2,
+            SCREEN_HEIGHT // 2,
+        ),
+    )
+
     game_over_txt = pygame. \
         font. \
         Font(None, 40). \
@@ -106,11 +126,11 @@ def render_end_screen(entities: EntitySystem):
     retry_txt = pygame. \
         font. \
         Font(None, 35). \
-        render('Press R to Retry', True, pygame.Color('brown'))
+        render('Retry', True, pygame.Color('black'))
     quit_txt = pygame. \
         font. \
         Font(None, 35). \
-        render('Press Q to Quit', True, pygame.Color('brown'))
+        render('Quit', True, pygame.Color('black'))
     score_txt = pygame. \
         font. \
         Font(None, 35). \
@@ -131,16 +151,52 @@ def render_end_screen(entities: EntitySystem):
     screen.blit(score_txt, ((SCREEN_WIDTH - score_txt.get_width()) // 2,
                             (SCREEN_HEIGHT - score_txt.get_height()) // 2 - SCREEN_HEIGHT // 7))
 
-    screen.blit(retry_txt, ((SCREEN_WIDTH - retry_txt.get_width()) // 2, (SCREEN_HEIGHT - retry_txt.get_height()) // 2))
-    screen.blit(quit_txt, (
-        (SCREEN_WIDTH - quit_txt.get_width()) // 2, (SCREEN_HEIGHT - quit_txt.get_height()) // 2 + SCREEN_HEIGHT // 15))
+    pygame.draw.rect(
+        screen,
+        GREEN,
+        (
+            SCREEN_WIDTH // 4,
+            SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12,
+            SCREEN_WIDTH // 10,
+            SCREEN_HEIGHT // 12,
+        ),
+    )
+    pygame.draw.rect(
+        screen,
+        RED,
+        (
+            SCREEN_WIDTH * 0.75 - SCREEN_WIDTH // 10,
+            SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12,
+            SCREEN_WIDTH // 10,
+            SCREEN_HEIGHT // 12,
+        ),
+    )
+    # screen.blit(retry_txt, ((SCREEN_WIDTH - retry_txt.get_width()) // 2, (SCREEN_HEIGHT - retry_txt.get_height()) // 2))
+    # screen.blit(quit_txt, (
+    #     (SCREEN_WIDTH - quit_txt.get_width()) // 2, (SCREEN_HEIGHT - quit_txt.get_height()) // 2 + SCREEN_HEIGHT // 15))
+    screen.blit(
+        retry_txt,
+        (
+            SCREEN_WIDTH // 4 + SCREEN_WIDTH // 20 - retry_txt.get_width() / 2,
+            SCREEN_HEIGHT * 0.75 + SCREEN_HEIGHT // 24 - SCREEN_HEIGHT // 12 - retry_txt.get_height() / 2,
+        ),
+    )
+    screen.blit(
+        quit_txt,
+        (
+            SCREEN_WIDTH * 0.75 - SCREEN_WIDTH // 10 + SCREEN_WIDTH // 20 - quit_txt.get_width() / 2,
+            SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12 + SCREEN_HEIGHT // 24 - quit_txt.get_height() / 2,
+        ),
+    )    
     pygame.display.flip()
 
 
 def draw(entities: EntitySystem) -> None:
     canvas.fill((255, 255, 255))
     canvas.blit(bg, (0, 0))
-
+    canvas.blit(bullet_img, (0.01 * SCREEN_WIDTH, 0.88 * SCREEN_HEIGHT))
+    canvas.blit(multiply_txt, (0.03 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT))
+    canvas.blit(pygame.font.Font(None,35).render(str(entities.bullets), True, pygame.Color('black')), (0.05 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT))
     # Zombie
     entities.draw()
     # Mouse
@@ -161,6 +217,7 @@ def main() -> None:
     timer: float = TIMER
     delta_t = 0
     entities = EntitySystem()
+    # entities.bullets
     entities.generate_random_zombie()
     # BGM Start
     bgm.play(-1)
@@ -187,20 +244,66 @@ def main() -> None:
             timer = 0
             get_event = False
             render_end_screen(entities)
+            pygame.mouse.set_visible(True)
             while not get_event:
+                mouse = pygame.mouse.get_pos()
+
+                if (
+                    SCREEN_WIDTH // 4 + SCREEN_WIDTH // 10 > mouse[0] > SCREEN_WIDTH // 4
+                    and SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12 < mouse[1] < SCREEN_HEIGHT * 0.75
+                ):
+                    pygame.draw.rect(
+                        screen,
+                        BRIGHT_GREEN,
+                        (
+                            SCREEN_WIDTH // 4,
+                            SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12,
+                            SCREEN_WIDTH // 10,
+                            SCREEN_HEIGHT // 12,
+                        ),
+                    )
+                    click = pygame.mouse.get_pressed()
+                    if click[0] == 1:
+                        get_event=True
+                        health = HEALTH
+                        timer = TIMER
+                        clock = pygame.time.Clock()
+                        entities.kill_count = 0
+                        pygame.mouse.set_visible(False)
+
+                if (
+                    SCREEN_WIDTH * 0.75 > mouse[0] > SCREEN_WIDTH * 0.75 - SCREEN_WIDTH // 10
+                    and SCREEN_HEIGHT * 0.75 > mouse[1] > SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12
+                ):
+                    pygame.draw.rect(
+                        screen,
+                        BRIGHT_RED,
+                        (
+                            SCREEN_WIDTH * 0.75 - SCREEN_WIDTH // 10,
+                            SCREEN_HEIGHT * 0.75 - SCREEN_HEIGHT // 12,
+                            SCREEN_WIDTH // 10,
+                            SCREEN_HEIGHT // 12,
+                        ),
+                    )
+                    click = pygame.mouse.get_pressed()
+                    if click[0] == 1:
+                        game_over = get_event = True
+            
                 for event in pygame.event.get():
                     if event.type == QUIT:
                         game_over = get_event = True
 
                     if event.type != pygame.KEYDOWN:
                         continue
+                
+                    # match event.key:
+                    #     case pygame.K_q:
+                    #         game_over = get_event = True
+                    #     case pygame.K_r:
+                    #         get_event = True
+                    #         timer = TIMER
+            # timer = TIMER
 
-                    match event.key:
-                        case pygame.K_q:
-                            game_over = get_event = True
-                        case pygame.K_r:
-                            get_event = True
-                            timer = TIMER
 
         # Displaying remaining time
         timer_text = pygame.font.Font(None, 40).render(f'{round(timer, 2)}', True, pygame.Color('black'))
@@ -209,11 +312,14 @@ def main() -> None:
         health_text = pygame.font.Font(None, 40).render(f'HEALTH: {health}', True, pygame.Color('red'))
         screen.blit(health_text, (100, 5))
 
-        pygame.display.flip()
         delta_t = clock.tick(FPS) / 1000
+
+        pygame.display.flip()
 
         # redraw
         draw(entities)
+        # pygame.display.update()
+
 
     pygame.quit()
 

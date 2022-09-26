@@ -30,6 +30,7 @@ health = HEALTH
 
 # sprite_list = zombie.get_sprites()
 
+
 class EntitySystem:
     def __init__(self):
         self.entities = set[Zombie]()
@@ -96,6 +97,13 @@ class EntitySystem:
         print(f'bullets: {self.bullets}')
         print(f'is reloading: {self.is_reloading}')
         print()
+
+
+
+# For bullet
+bullet = pygame.image.load("./image/bullet.png").convert_alpha()
+bullet_img = pygame.transform.scale(bullet, (bullet.get_width() // 10, bullet.get_height()// 10))
+multiply_txt = pygame.font.Font(None,35).render("X", True, pygame.Color('black'))
 
 
 def render_end_screen(entities: EntitySystem):
@@ -186,7 +194,9 @@ def render_end_screen(entities: EntitySystem):
 def draw(entities: EntitySystem) -> None:
     canvas.fill((255, 255, 255))
     canvas.blit(bg, (0, 0))
-
+    canvas.blit(bullet_img, (0.01 * SCREEN_WIDTH, 0.88 * SCREEN_HEIGHT))
+    canvas.blit(multiply_txt, (0.03 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT))
+    canvas.blit(pygame.font.Font(None,35).render(str(entities.bullets), True, pygame.Color('black')), (0.05 * SCREEN_WIDTH, 0.92 * SCREEN_HEIGHT))
     # Zombie
     entities.draw()
     # Mouse
@@ -207,6 +217,7 @@ def main() -> None:
     timer: float = TIMER
     delta_t = 0
     entities = EntitySystem()
+    # entities.bullets
     entities.generate_random_zombie()
     # BGM Start
     bgm.play(-1)
@@ -256,6 +267,8 @@ def main() -> None:
                         get_event=True
                         health = HEALTH
                         timer = TIMER
+                        clock = pygame.time.Clock()
+                        entities.kill_count = 0
                         pygame.mouse.set_visible(False)
 
                 if (
@@ -282,7 +295,7 @@ def main() -> None:
 
                     if event.type != pygame.KEYDOWN:
                         continue
-
+                
                     # match event.key:
                     #     case pygame.K_q:
                     #         game_over = get_event = True
@@ -291,6 +304,7 @@ def main() -> None:
                     #         timer = TIMER
             # timer = TIMER
 
+
         # Displaying remaining time
         timer_text = pygame.font.Font(None, 40).render(f'{round(timer, 2)}', True, pygame.Color('black'))
         screen.blit(timer_text, (5, 5))
@@ -298,11 +312,14 @@ def main() -> None:
         health_text = pygame.font.Font(None, 40).render(f'HEALTH: {health}', True, pygame.Color('red'))
         screen.blit(health_text, (100, 5))
 
-        pygame.display.flip()
         delta_t = clock.tick(FPS) / 1000
+
+        pygame.display.flip()
 
         # redraw
         draw(entities)
+        # pygame.display.update()
+
 
     pygame.quit()
 

@@ -61,6 +61,7 @@ class EntitySystem:
             if self.num_frames_reload >= FPS + (FPS >> 1):
                 self.is_reloading = False
                 self.num_frames_reload = 0
+                self.bullets = MAX_BULLETS
 
         for z in self.entities:
             if z.is_dead:
@@ -82,10 +83,9 @@ class EntitySystem:
 
         gun_shot.play()
         self.shot_count += 1
+        self.bullets -= 1
         if self.bullets == 0:
             self.is_reloading = True
-            self.bullets = MAX_BULLETS
-        self.bullets -= 1
 
         for z in self.entities:
             if 0 < x - z.x < z.w * z.scale and 0 < y - z.y < z.h * z.scale:
@@ -93,6 +93,16 @@ class EntitySystem:
                 z.is_dead = True
                 self.kill_count += 1
                 break
+    
+    def reset(self):
+        self.entities = set[Zombie]()
+        self.deleted_entities = list[Zombie]()
+        self.kill_count = 0
+        self.shot_count = 0
+        self.bullets = MAX_BULLETS
+        self.is_reloading = False
+        self.num_frames_reload = 0
+
 
     def log(self):
         print(f'bullets: {self.bullets}')
@@ -204,6 +214,8 @@ def draw(entities: EntitySystem, timer: float) -> None:
     # Reattach canvas
     screen.blit(canvas, (0, 0))
 
+    if timer<0:
+        timer=0
     timer_text = pygame.font.Font(None, 40).render(f'{round(timer, 2)}', True, pygame.Color('black'))
     screen.blit(timer_text, (5, 5))
 
@@ -245,7 +257,7 @@ def main() -> None:
 
         # Prompt end-game screen
         timer -= delta_t
-        if timer <= 0 or health <= 0:
+        if timer < 0 or health <= 0:
             timer = 0
             get_event = False
             render_end_screen(entities)
@@ -273,7 +285,8 @@ def main() -> None:
                         health = HEALTH
                         timer = TIMER
                         clock = pygame.time.Clock()
-                        entities.kill_count = 0
+                        entities.reset()
+                        entities.generate_random_zombie()
                         pygame.mouse.set_visible(False)
 
                 if (
@@ -298,13 +311,14 @@ def main() -> None:
                     if event.type == QUIT:
                         game_over = get_event = True
 
-        delta_t = clock.tick(FPS) / 1000
 
         # Displaying remaining time
 
         # redraw
         draw(entities, timer)
         # pygame.display.update()
+        delta_t = clock.tick(FPS) / 1000
+        print(delta_t)
 
     pygame.quit()
 
